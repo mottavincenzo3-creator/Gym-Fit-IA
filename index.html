@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymFit AI - Generatore Schede di Allenamento</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">GymFit AI</span>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Scientific Generator</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- Wizard Container -->
+        <div id="wizard-container" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+            
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-xs font-medium text-slate-400 mb-2">
+                    <span id="step-indicator">Passo 1 di 3: Profilo Fisico</span>
+                    <span id="progress-percent">33%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-cyan-500 h-full transition-all duration-300 w-1/3"></div>
+                </div>
+            </div>
+
+            <form id="workout-form" onsubmit="event.preventDefault();">
+                
+                <!-- STEP 1: Profilo Fisico -->
+                <div id="step-1" class="space-y-6">
+                    <h2 class="text-xl font-bold tracking-tight text-white">Il tuo profilo fisico</h2>
+                    <p class="text-sm text-slate-400">Inserisci i tuoi parametri biologici per permettere all'algoritmo di calcolare i volumi di carico.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Età</label>
+                            <input type="number" id="age" value="25" min="14" max="99" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Sesso</label>
+                            <select id="gender" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                <option value="male">Maschio</option>
+                                <option value="female">Femmina</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Peso (kg)</label>
+                            <input type="number" id="weight" value="75" min="40" max="200" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Livello di Esperienza</label>
+                            <select id="level" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                <option value="beginner">Principiante (&lt; 1 anno)</option>
+                                <option value="intermediate" selected>Intermedio (1-3 anni)</option>
+                                <option value="advanced">Avanzato (&gt; 3 anni)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="button" onclick="nextStep(2)" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition cursor-pointer">
+                            Avanti &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Obiettivi e Logistica -->
+                <div id="step-2" class="space-y-6 hidden">
+                    <h2 class="text-xl font-bold tracking-tight text-white">Obiettivi e logistica</h2>
+                    <p class="text-sm text-slate-400">Definisci il focus del tuo allenamento e la disponibilità settimanale.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Obiettivo Principale</label>
+                            <select id="goal" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                <option value="hypertrophy" selected>Ipertrofia (Crescita Muscolare)</option>
+                                <option value="strength">Forza Massimale</option>
+                                <option value="recomp">Ricomposizione / Dimagrimento</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Giorni di allenamento a settimana</label>
+                            <select id="days" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                <option value="2">2 Giorni (Full Body)</option>
+                                <option value="3" selected>3 Giorni (Push / Pull / Legs)</option>
+                                <option value="4">4 Giorni (Upper / Lower)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Attrezzatura Disponibile</label>
+                            <select id="equipment" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                                <option value="gym" selected>Palestra Completa</option>
+                                <option value="home">Home Gym (Manubri / Bilanciere)</option>
+                                <option value="bodyweight">Corpo Libero / Calisthenics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between pt-4">
+                        <button type="button" onclick="prevStep(1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-3 rounded-xl transition cursor-pointer">
+                            &larr; Indietro
+                        </button>
+                        <button type="button" onclick="generateWorkout()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black px-6 py-3 rounded-xl transition cursor-pointer shadow-lg shadow-cyan-500/20">
+                            Genera Scheda ⚡
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- STEP 3: Scheda Generata (Output) -->
+        <div id="step-3" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                <div>
+                    <span id="badge-goal" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Ipertrofia</span>
+                    <h2 id="result-title" class="text-2xl font-black text-white mt-2">Scheda Push / Pull / Legs</h2>
+                    <p id="result-subtitle" class="text-sm text-slate-400 mt-1">Ottimizzata in multifrequenza per livello Intermedio.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button onclick="resetWizard()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-4 py-2.5 rounded-xl transition text-sm cursor-pointer">
+                        Rigenera
+                    </button>
+                    <button onclick="window.print()" class="flex-1 sm:flex-none bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition text-sm cursor-pointer shadow-md shadow-cyan-500/10">
+                        Stampa / PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheda Giorni Container -->
+            <div id="workout-output-container" class="space-y-6">
+                <!-- Inserito dinamicamente da JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Logica -->
+    <script>
+        function nextStep(step) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            
+            document.getElementById('step-indicator').innerText = `Passo ${step} di 3: Obiettivi e Logistica`;
+            document.getElementById('progress-percent').innerText = `${step * 33}%`;
+            document.getElementById('progress-bar').style.width = `${step * 33}%`;
+        }
+
+        function prevStep(step) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            
+            document.getElementById('step-indicator').innerText = `Passo ${step} di 3: Profilo Fisico`;
+            document.getElementById('progress-percent').innerText = '33%';
+            document.getElementById('progress-bar').style.width = '33%';
+        }
+
+        const databaseExercises = {
+            gym: {
+                push: [
+                    { name: "Panca Piana con Bilanciere", sets: 4, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Distensioni Manubri su Inclinata", sets: 3, reps: "8-10", rest: "90s", rir: "1-2", type: "Multiarticolare" },
+                    { name: "Military Press in Piedi", sets: 3, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Alzate Laterali ai Cavi", sets: 4, reps: "12-15", rest: "60s", rir: "1", type: "Isolamento" },
+                    { name: "Pushdown Tricipiti al Cavo", sets: 3, reps: "10-12", rest: "60s", rir: "1", type: "Isolamento" }
+                ],
+                pull: [
+                    { name: "Trazioni alla Sbarra (Pull-up)", sets: 4, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Rematore con Bilanciere", sets: 3, reps: "8-10", rest: "90s", rir: "1-2", type: "Multiarticolare" },
+                    { name: "Lat Machine Avanti", sets: 3, reps: "10-12", rest: "90s", rir: "1", type: "Complementare" },
+                    { name: "Pullover ai Cavi", sets: 3, reps: "12-15", rest: "60s", rir: "1", type: "Isolamento" },
+                    { name: "Curl Bicipiti con Manubri su Inclinata", sets: 3, reps: "10-12", rest: "60s", rir: "1", type: "Isolamento" }
+                ],
+                legs: [
+                    { name: "Squat con Bilanciere", sets: 4, reps: "5-7", rest: "180s", rir: "2", type: "Multiarticolare" },
+                    { name: "Leg Press 45°", sets: 3, reps: "8-10", rest: "120s", rir: "1-2", type: "Multiarticolare" },
+                    { name: "Stacchi Rumeni con Manubri/Bilanciere", sets: 3, reps: "8-10", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Leg Curl sdraiato", sets: 3, reps: "12-15", rest: "60s", rir: "1", type: "Isolamento" },
+                    { name: "Standing Calf Raise (Polpacci)", sets: 4, reps: "15-20", rest: "45s", rir: "0-1", type: "Isolamento" }
+                ],
+                fullbody1: [
+                    { name: "Squat con Bilanciere", sets: 3, reps: "6-8", rest: "150s", rir: "2", type: "Multiarticolare" },
+                    { name: "Panca Piana con Bilanciere", sets: 3, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Rematore con Bilanciere", sets: 3, reps: "8-10", rest: "90s", rir: "2", type: "Multiarticolare" },
+                    { name: "Alzate Laterali", sets: 3, reps: "12-15", rest: "60s", rir: "1", type: "Isolamento" }
+                ],
+                fullbody2: [
+                    { name: "Stacco da Terra Classico", sets: 3, reps: "5", rest: "180s", rir: "2", type: "Multiarticolare" },
+                    { name: "Military Press", sets: 3, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Lat Machine", sets: 3, reps: "8-10", rest: "90s", rir: "1", type: "Multiarticolare" },
+                    { name: "Curl Bicipiti", sets: 3, reps: "10-12", rest: "60s", rir: "1", type: "Isolamento" }
+                ],
+                upper: [
+                    { name: "Panca Piana con Bilanciere", sets: 4, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Trazioni alla Sbarra", sets: 4, reps: "6-8", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Lento Avanti con Manubri", sets: 3, reps: "8-10", rest: "90s", rir: "1", type: "Multiarticolare" },
+                    { name: "Rematore con Manubrio", sets: 3, reps: "10-12", rest: "90s", rir: "1", type: "Complementare" },
+                    { name: "Curl e Tricipiti Superset", sets: 3, reps: "12", rest: "60s", rir: "1", type: "Isolamento" }
+                ],
+                lower: [
+                    { name: "Squat con Bilanciere", sets: 4, reps: "6-8", rest: "150s", rir: "2", type: "Multiarticolare" },
+                    { name: "Stacchi Rumeni", sets: 3, reps: "8-10", rest: "120s", rir: "2", type: "Multiarticolare" },
+                    { name: "Leg Press", sets: 3, reps: "10-12", rest: "90s", rir: "1", type: "Multiarticolare" },
+                    { name: "Leg Extension", sets: 3, reps: "12-15", rest: "60s", rir: "1", type: "Isolamento" },
+                    { name: "Calf Raise", sets: 4, reps: "15", rest: "45s", rir: "0", type: "Isolamento" }
+                ]
+            }
+        };
+
+        function generateWorkout() {
+            const goal = document.getElementById('goal').value;
+            const days = document.getElementById('days').value;
+            const level = document.getElementById('level').value;
+
+            document.getElementById('wizard-container').classList.add('hidden');
+            document.getElementById('step-3').classList.remove('hidden');
+
+            const goalLabels = {
+                hypertrophy: "Ipertrofia (Crescita Muscolare)",
+                strength: "Forza Massimale",
+                recomp: "Ricomposizione e Definizione"
+            };
+            document.getElementById('badge-goal').innerText = goalLabels[goal];
+
+            let htmlContent = '';
+            const db = databaseExercises.gym;
+
+            if (days === "3") {
+                document.getElementById('result-title').innerText = "Scheda 3 Giorni - Push / Pull / Legs";
+                document.getElementById('result-subtitle').innerText = `Frequenza ideale per ${level}, focus su massimo recupero e stimolo ottimale.`;
+                
+                htmlContent += buildDayCard("Giorno A: Push (Petto, Spalle, Tricipiti)", db.push);
+                htmlContent += buildDayCard("Giorno B: Pull (Dorso, Bicipiti, Posteriore)", db.pull);
+                htmlContent += buildDayCard("Giorno C: Legs (Gambe, Core)", db.legs);
+            } else if (days === "2") {
+                document.getElementById('result-title').innerText = "Scheda 2 Giorni - Full Body";
+                document.getElementById('result-subtitle').innerText = `Ideale per impegni ridotti, stimolando tutto il corpo a seduta.`;
+                
+                htmlContent += buildDayCard("Sessione A: Full Body A", db.fullbody1);
+                htmlContent += buildDayCard("Sessione B: Full Body B", db.fullbody2);
+            } else {
+                document.getElementById('result-title').innerText = "Scheda 4 Giorni - Upper / Lower";
+                document.getElementById('result-subtitle').innerText = `La miglior suddivisione in multifrequenza per ${level}.`;
+                
+                htmlContent += buildDayCard("Giorno 1: Upper Body A", db.upper);
+                htmlContent += buildDayCard("Giorno 2: Lower Body A", db.lower);
+                htmlContent += buildDayCard("Giorno 3: Upper Body B", db.upper);
+                htmlContent += buildDayCard("Giorno 4: Lower Body B", db.lower);
+            }
+
+            document.getElementById('workout-output-container').innerHTML = htmlContent;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function buildDayCard(title, exercises) {
+            let rows = exercises.map(ex => `
+                <tr class="border-b border-slate-800/60 hover:bg-slate-800/30 transition">
+                    <td class="py-3 px-4 font-medium text-white">${ex.name} <span class="block text-xs text-cyan-400 font-normal">${ex.type}</span></td>
+                    <td class="py-3 px-4 text-center text-slate-300 font-semibold">${ex.sets}</td>
+                    <td class="py-3 px-4 text-center text-slate-300">${ex.reps}</td>
+                    <td class="py-3 px-4 text-center text-slate-400 text-xs">${ex.rest}</td>
+                    <td class="py-3 px-4 text-center text-cyan-300 text-xs font-medium">RIR ${ex.rir}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mb-6">
+                    <div class="bg-slate-800/60 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                        <h3 class="font-bold text-lg text-white">${title}</h3>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">${exercises.length} Esercizi</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs uppercase text-slate-400 bg-slate-950/40">
+                                    <th class="py-3 px-4 font-semibold">Esercizio</th>
+                                    <th class="py-3 px-4 text-center font-semibold">Serie</th>
+                                    <th class="py-3 px-4 text-center font-semibold">Ripetizioni</th>
+                                    <th class="py-3 px-4 text-center font-semibold">Recupero</th>
+                                    <th class="py-3 px-4 text-center font-semibold">Intensità</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetWizard() {
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('wizard-container').classList.remove('hidden');
+            nextStep(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+
+</body>
+</html>
